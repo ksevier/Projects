@@ -1,5 +1,5 @@
 This is a compilation of Mechanical Engineering projects I am able to share with job recruiters as well as anyone else interested in viewing my work.
-I upload solo projects and projects wehere I was the main contributor. 
+I upload solo projects and projects where I was the main contributor. 
 If you have any questions, please email me at ksevier@caltech.edu
 
 The "Goalie" is a robot I designed and manufactured with the help of Randy Ngo, Kyle Chen, and Alexis Herfurth at Caltech for the 40th annual ME 72 Design competition. 
