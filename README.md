@@ -9,3 +9,8 @@ rink itself had a ferromagnetic surface, so teams optimized the stability of the
 The team I was on won the competition. More information, as well as the match, can be seen here: https://me72.caltech.edu/
 The CAD assembly of the goalie bot does not include electronics, which are placed on the polycarbonate midplate of the assembly inside the goalie bot.  
 
+The "Transmission" is a group project where student teams design a transmission to optimize the speed and torque of a spinning bike wheel. I was the lead 
+in design and manufacturing for the transmission. This tranmission design taught me a lot about engineering design. I have learned how to manufacture press fit holes,
+that flange bearings would have been better to use in this design, that force/stress analysis of the bearing holes in the acrylic is critical, and the importance of loctite. 
+Our team (Jaylen Shawcross, Sara Razavi, Bella Mueller, and I) tied second place in the class out of seven teams. We reached the highest speed for the bike wheel at 212 rpm.
+
