@@ -14,3 +14,6 @@ in design and manufacturing for the transmission. This tranmission design taught
 that flange bearings would have been better to use in this design, that force/stress analysis of the bearing holes in the acrylic is critical, and the importance of loctite. 
 Our team (Jaylen Shawcross, Sara Razavi, Bella Mueller, and I) tied second place in the class out of seven teams. We reached the highest speed for the bike wheel at 212 rpm.
 
+The "Aerospace MATLAB scripts" are scripts that compute calculations of different spacecraft topics (rocket launch or orbital mechanics). These were made as part of homework assignments for 
+the aerospace courses I took at Caltech. Each script was made from scratch, except I used the CSPICE (NASA) package for my orbital mechanics scripts to access orbital data from NASA. 
+
