@@ -1,0 +1,331 @@
+% HW1AE105A.m
+% Used the micecookbook.m as a template
+% documentation and for set up [A] [B] and [C]: GettingStartedWithMICE.pdf
+%
+% March 30, 2019 stefano.campagnola@jpl.nasa.gov
+%
+% SET UP IS BELOW, THEN THE HOMEWORK PROBLEMS
+% -----------------------------------------------------------
+%% [A] Set paths
+%   (1) Replace path_to_generic_kernels and path_to_mice with your path
+%   (2) Remember to use '/' for mac and linux, '\' for windows
+path_to_generic_kernels = 'C:\Users\Owner\Downloads\Ae105_MICE\generic_kernels';
+path_to_mice            = 'C:\Users\Owner\Downloads\Ae105_MICE\mice';
+addpath([path_to_mice,'\src\mice']);
+addpath([path_to_mice,'\lib']);
+        
+%% [B] Load the datafiles (kernels)
+%   (1) leap-seconds
+cspice_furnsh( [path_to_generic_kernels,'\lsk\naif0012.tls.pc']); 
+%   (2) jovian satellite ephemerides
+cspice_furnsh( [path_to_generic_kernels,'\spk\satellites\jup310.bsp']); 
+%   (3) planets
+cspice_furnsh( [path_to_generic_kernels,'\spk\planets\de421.bsp']); 
+%   (4) gravity constants  - you can also open this file with a text editor to read its
+%       content
+cspice_furnsh( [path_to_generic_kernels,'\pck\gm_de431.tpc']); 
+%   (5) planetary contant  - you can also open this file with a text editor to read its
+%       content
+cspice_furnsh( [path_to_generic_kernels,'\pck\pck00010.tpc']);
+
+%% [C] Planetary Constant References
+%   (1) You can read details on cspice_bodvcd and on the pck file
+%   (2) NOTE: Planets/Moons IDs are as follow
+%       1 or 199    Mercury barycenter
+%       2 or 299    Venus barycenter
+%       3           Earth Moon Barycenter
+%       301         Moon Barycenter
+%       399         Earth Barycenter
+%       4           Mars system barycenter
+%       401         Phobos
+%       402         Deimos
+%       499         Mars
+%       5           Jupiter system Baricenter 
+%       etc etc . Read naif_ids.html in the documentation for more info
+
+
+% Clear the memory
+%cspice_kclear
+
+%% Problem 2: Elevation and Azimuth of Mars and Jupiter wrt surface of Earth
+
+% Here is the necessary Setup
+
+% Time and Dates
+date0   = '2025 Apr 5 10:00:00 UTC'; % can edit this to any time desired
+et0     = cspice_str2et(date0);
+
+% Longtitude and Latitude angles of Pasadena, CA on Earth
+phi = deg2rad(34.1478);
+theta = deg2rad(-118.1445);
+
+% Rotation Vectors
+U = [cos(phi)*cos(theta); cos(phi)*sin(theta); sin(phi)];
+N = [-sin(phi)*cos(theta); -sin(phi)*sin(theta); cos(phi)];
+E = [-sin(theta); cos(theta); 0];
+
+rot_vec = [E,N,U]';
+
+% Initialize the rotation matrix to align the earth with the ecliptic frame
+Rot = cspice_pxform('ECLIPJ2000','IAU_EARTH',et0);
+
+% Radius Correction (translates data from Earth's center to surface)
+Radius_Correction = 6371 * U;
+
+% Earth's state with respect to Mars (EwrtM) and with respect to Jupiter
+% (EwrtJ) barycenters
+EwrtM =  cspice_spkpos('4',et0, 'ECLIPJ2000', 'NONE', '3');
+EwrtJ = cspice_spkpos('5',et0, 'ECLIPJ2000', 'NONE', '3');
+
+% Modified position states to be in the correct reference frame 
+% This is where EwrtM_ECEF is the EwrtM state in the ECEF (earth centered, 
+% earth fixed) reference frame and EwrtJ_ECEF is the EwrtJ state in the 
+% ECEF reference frame.
+
+EwrtM_ECEF = Rot*EwrtM(1:3); % multiplying position coordinates of EwrtM by ECEF rotation matrix 
+EwrtJ_ECEF = Rot*EwrtJ(1:3); % multiplying position coordinates of EwrtJ by ECEF rotation matrix 
+
+% Topographically accurate EwrtM and EwrtJ by shifting the position states 
+% for EwrtM and EwrtJ from refering to the center of the Earth to its
+% surface
+
+EwrtM_topo = EwrtM_ECEF - Radius_Correction; 
+EwrtJ_topo = EwrtJ_ECEF - Radius_Correction;
+
+% Create the directional vectors of EwrtM and EwrtJ
+E_mars = dot(E,EwrtM_topo);
+E_jupiter = dot(E,EwrtJ_topo);
+N_mars = dot(N,EwrtM_topo);
+N_jupiter = dot(N,EwrtJ_topo);
+U_mars = dot(U,EwrtM_topo);
+U_jupiter = dot(U,EwrtJ_topo);
+
+% Convert the directional vectors of Earth wrt Mars and Jupiter to angles
+% (azimuth and elevation)
+
+% Convert directional vectors to angles function definition
+Vect_2_ang = @(E,N,U,ewrt) deal(mod(atan2(E,N), 2*pi), atan2(U, norm(ewrt)));
+
+% Applying the function above to obtain Azimuth and Elevation angles
+[azimuth_M, elev_M] = Vect_2_ang(E_mars, N_mars, U_mars,EwrtM_topo);
+[azimuth_J, elev_J] = Vect_2_ang(E_jupiter, N_jupiter, U_jupiter,EwrtJ_topo);
+
+% Display the results 
+
+fprintf('Elevation of Mars wrt Earth')
+rad2deg(elev_M)
+
+fprintf('Elevation of Jupiter wrt Earth')
+rad2deg(elev_J)
+
+fprintf('Azimuth of Mar wrt Earth')
+rad2deg(azimuth_M)
+
+fprintf('Azimuth of Jupiter wrt Earth')
+rad2deg(azimuth_J)
+
+%% Problem 3 
+
+% Necessary Setup is needed
+
+% Time and Dates
+date3   = '2025 Jan 1 0:00:00 PDT'; 
+et3     = cspice_str2et(date3);
+et3_R    = et0:3600:(et0+86400);% make a row vector of times for a day
+et_Y    = et3:86400:(et3+(3.15576*10^7)); % make a row vector of times for a year
+et_3Y   = et3:86400:(et3+(9.46728*10^7)); % make a row vector of times for 3 years
+
+date4 = '2025 Oct 1 0:00:00 PDT';
+et4     = cspice_str2et(date4);
+et_3M    = et4:86400:(et4+(7.889399*10^6)); % make a row vector of times for 3 months
+
+
+% Plot orbits of planets with respect to the sun propogating for a whole
+% year (Jan 1st 2025 to Dec 31st 2027)
+
+% planets array
+planets = ['1' '2' '3' '4' '5' '6' '7' '8'];
+
+figure;
+hold on;
+xlabel('km')
+ylabel('km')
+title("Orbits of Planets around the Sun in Space Jan 1st 2025 - Dec 31st 2025")
+for j = 1:8
+    pos = zeros(3, 8);
+    for k = 1:numel(et_Y)
+        pos(:, k) = cspice_spkpos(planets(j) ,et_Y(k), 'ECLIPJ2000', 'NONE', '0');
+    end
+    plot (pos(1,:), pos(2,:), '-');
+end
+legend('Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune');
+hold off;
+
+% Jan 1st 2025 to December 31st 2027 Mars wrt Sun radius/velocity plot
+
+figure;
+% Initialize position and velocity states for Mars wrt Sun
+r_m = zeros(1, numel(et_3Y));
+v_m = zeros(1, numel(et_3Y));
+for k = 1:numel(et_3Y)
+    MwrtS = cspice_spkezr('499' ,et_3Y(k), 'ECLIPJ2000', 'NONE', '0');
+    r = MwrtS(1:3);
+    v = MwrtS(4:6);
+    r_m(k) = norm(r);
+    v_m(k) = norm(v);
+end
+figure;
+plot (et_3Y, r_m, '-');
+xlabel('km')
+ylabel('km')
+title("Orbital radius Mars around the Sun in Space Jan 1st 2025 - Dec 31st 2027")
+
+figure;
+plot (et_3Y, v_m, '-');
+xlabel('km')
+ylabel('km')
+title("Orbital velocity Mars around the Sun in Space Jan 1st 2025 - Dec 31st 2027")
+
+% % Oct 1st 2025 to December 31st 2025 Moon wrt Earth (mwrtE) radius and speed plots
+% same approach as plot right above (MwrtS)
+
+figure;
+r_e = zeros(1, numel(et_3M));
+v_e = zeros(1, numel(et_3M));
+for k = 1:numel(et_3M)
+    mwrtE = cspice_spkezr('3' ,et_3M(k), 'ECLIPJ2000', 'NONE', '301');
+    r = mwrtE(1:3);
+    v = mwrtE(4:6);
+    r_e(k) = norm(r);
+    v_e(k) = norm(v);
+end
+
+plot (et_3M, r_e, '-');
+xlabel('km')
+ylabel('km')
+title("Orbital radius Moon wrt Earth in Space Oct 1st 2025 - Dec 31st 2025")
+
+plot (et_3M, v_e, '-');
+xlabel('km')
+ylabel('km')
+title("Orbital velocity Moon wrt Earth in Space Oct 1st 2025 - Dec 31st 2025")
+
+% I notice that the speed propogation for both Moon wrt Earth and Mars wrt 
+% Sun was essentially inverse to the radius propogation. For example, speed
+% increases as the radius of the orbit decreases and vice versa. The
+% propogation is sinousodial. However, for the Moon wrt Earth case, the
+% sinousodial pattern is not perfect, and seems to be warped. This could be
+% due to the fact that the sun's gravity still has a powerful impact on the 
+% orbit of the Earth and the moon. For the orbits, I noticed that the
+% radius of the orbits for Mercury through Mars is significantly smaller
+% than the orbits from Jupiter to Neptune. Mercury also has a very
+% eccentric orbit. 
+
+%% Problem 4
+
+%  Time and Date
+
+t0_utc = '2025 Jan 01 00:00:00 UTC';
+et0 = cspice_str2et(t0_utc);
+et_0Y    = et0:86400:(et0+(3.15576*10^7)); % make a row vector of times for a year
+
+% Get mu 
+mu = 1.32712440018e11;
+%GM = cspice_bodvcd(4,'GM',10);
+
+% Obtain State Vector from CSpice 
+ MwrtSun = cspice_spkezr('4',et0, 'ECLIPJ2000', 'NONE', '0');
+ %SwrtSSB= cspice_spkezr('10',et0, 'ECLIPJ2000', 'NONE', '0');
+
+% initial conditions of the trajectory in relation to Mars based on MwrtSun
+% state vector
+
+r_0 = MwrtSun(1:3);
+v_0 = MwrtSun(4:6);
+y_0 = [r_0;v_0];
+
+% Time span (one year for proper comparison to problem 3)
+tspan = [0 3600*24*365];
+
+% Use ODE 113 to propogate the 2 body problem equation
+
+two_body_eq = @(t,y) [y(4:6); -mu*y(1:3)/(norm(y(1:3)).^3)]; % Change to fit your situation
+
+% relative tolerance array
+reltol = [1e-4,1e-6,1e-8,1e-10];
+
+% use ode113 to calculate the full orbital trajectories of Mars wrt Sun
+% over a year for each relative tolerance type in the reltol array.
+
+opts4 = odeset('RelTol',1e-4,'AbsTol',1e-13);
+[t4,Y4] = ode113(two_body_eq,tspan,y_0,opts4);
+
+opts6 = odeset('RelTol',1e-4,'AbsTol',1e-13);
+[t6,Y6] = ode113(two_body_eq,tspan,y_0,opts6);
+
+opts8 = odeset('RelTol',1e-4,'AbsTol',1e-13);
+[t8,Y8] = ode113(two_body_eq,tspan,y_0,opts8);
+
+opts10 = odeset('RelTol',1e-4,'AbsTol',1e-13);
+[t10,Y10] = ode113(two_body_eq,tspan,y_0,opts10);
+
+% Now get the position for the propogated Mars state for each reltol
+r4 = Y4(:,1:3);
+r_x4 = Y4(:,1);
+r_y4 = Y4(:,2);
+r_z4 = Y4(:,3);
+
+r6 = Y6(:,1:3);
+r_x6 = Y6(:,1);
+r_y6 = Y6(:,2);
+r_z6 = Y6(:,3);
+
+r8 = Y8(:,1:3);
+r_x8 = Y8(:,1);
+r_y8 = Y8(:,2);
+r_z8 = Y8(:,3);
+
+r10 = Y10(:,1:3);
+r_x10 = Y10(:,1);
+r_y10 = Y10(:,2);
+r_z10 = Y10(:,3);
+
+
+% Plot full orbital trajectories of MwrtSun from Jan 1st 2025 - Dec 31 2025
+% with the different reltols
+figure;
+hold on;
+plot(r_x4,r_y4,'b-','LineWidth', 1.5)
+plot(r_x6,r_y6,'r-','LineWidth', 1.5)
+plot(r_x8,r_y8,'g-','LineWidth', 1.5)
+plot(r_x10,r_y10,'-','LineWidth', 1.5)
+xlabel('km');
+ylabel('km');
+title('Mars Propogated Orbit wrt Sun 2D')
+legend('1e-4','1e-6','1e-8','1e-10')
+hold off;
+
+% Which RelTol would you use from now on? 
+%I would use RelTol 1e-10 as it is the most accurate so far. This RelTol
+%seems more smooth compared to the rest.
+
+% Compare the propagated states with the ephemerides from SPICE.
+% The propogated states line up really closely with the ephemerides from
+% SPICE, and is more aligned as the rel tol gets lower. Comparison graph is
+% below at RelTol 1e-10.
+
+% Getting orbit radius from Spice orbit of Mars throughout one year
+pos = zeros(3, 8);
+for k = 1:numel(et_Y)
+    pos(:, k) = cspice_spkpos('4' ,et_Y(k), 'ECLIPJ2000', 'NONE', '0');
+end
+
+figure;
+hold on;
+plot(r_x10,r_y10,'b-','LineWidth', 1.5)
+plot (pos(1,:), pos(2,:), '-');
+xlabel('km');
+ylabel('km');
+title('Mars Orbit wrt Sun 2D (Propogated vs Spice)');
+legend('Propogated','Spice');
+
