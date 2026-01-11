@@ -19,3 +19,5 @@ the aerospace courses I took at Caltech. Each script was made from scratch, exce
 
 I am currently working on a 4 DOF robot arm that can build Lincoln Log structures alongside participants for the class ME 134 with two teammates Sophia Stevens and Ruth Berkun.
 Once the project is finished (3/18), I will upload the final CAD of the robotic arm and final code to this repo. 
+
+I also have experience with ANSYS simulations (Fluent and Static Structural). I have uploaded some of the simulations I created, however, if they are difficult to access please email me at ksevier@caltech.edu
