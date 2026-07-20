@@ -1,7 +1,7 @@
 This is a compilation of Mechanical Engineering projects I am able to share with job recruiters as well as anyone else interested in viewing my work.
 I upload solo projects and projects where I was the main contributor. 
 I also upload presentations and papers on research I have done in the past. 
-If you have any questions, please email me at ksevier@caltech.edu
+If you have any questions, please email me at kristi21210@gmail.com
 
 The "Goalie" is a robot I designed and manufactured (as the main designer and manufacturer) with the help of Randy Ngo, Kyle Chen, and Alexis Herfurth at Caltech for the 40th annual ME 72 Design competition. 
 Teams of six students competed against each other in a game of robot street hockey. Each team was allowed to create 3 robots, where one of them acted as a goalie bot. The hockey
@@ -17,7 +17,7 @@ Our team (Jaylen Shawcross, Sara Razavi, Bella Mueller, and I) tied second place
 The "Aerospace MATLAB scripts" are scripts that compute calculations of different spacecraft topics (rocket launch or orbital mechanics). These were made as part of homework assignments for 
 the aerospace courses I took at Caltech. Each script was made from scratch, except I used the CSPICE (NASA) package for my orbital mechanics scripts to access orbital data from NASA. 
 
-I am currently working on a 4 DOF robot arm that can build Lincoln Log structures alongside participants for the class ME 134 with two teammates Sophia Stevens and Ruth Berkun.
-Once the project is finished (3/18), I will upload the final CAD of the robotic arm and final code to this repo. 
+I worked on creating a 5 DOF robot arm that can build Lincoln Log structures for the class ME 134 with two teammates Sophia Stevens and Ruth Berkun.
+I have uploaded the final CAD for the robot to this repository (mainly solo effort). All the collaborative code for the project can be found in this public repository: https://github.com/smsteven22/ME-CS-EE-134-Wi-26-Work 
 
-I also have experience with ANSYS simulations (Fluent and Static Structural). I have uploaded some of the simulations I created, however, if they are difficult to access please email me at ksevier@caltech.edu
+I also have experience with ANSYS simulations (Fluent and Static Structural). I have uploaded some of the simulations I created, however, if they are difficult to access please email me at kristi21210@gmail.com
